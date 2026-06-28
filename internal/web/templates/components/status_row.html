@@ -1,0 +1,105 @@
+{{define "status_rows"}}
+{{range .Hosts}}
+    {{template "status_row" .}}
+{{end}}
+<!-- Out of band updates for stats grid -->
+<h3 id="stat-total" hx-swap-oob="true" class="text-3xl font-bold mt-2 text-slate-100">{{.Stats.Total}}</h3>
+<h3 id="stat-up" hx-swap-oob="true" class="text-3xl font-bold mt-2 text-emerald-400">{{.Stats.Up}}</h3>
+<h3 id="stat-down" hx-swap-oob="true" class="text-3xl font-bold mt-2 text-rose-500">{{.Stats.Down}}</h3>
+{{end}}
+
+{{define "status_row"}}
+<tr class="hover:bg-slate-900/35 transition duration-150 border-b border-slate-900/50">
+    <!-- Host Target name -->
+    <td class="px-6 py-4 whitespace-nowrap">
+        <div class="flex flex-col">
+            <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-sm font-semibold text-slate-200">{{.Name}}</span>
+                {{range .Groups}}
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                    {{.}}
+                </span>
+                {{end}}
+            </div>
+            <span class="text-xs text-slate-500 font-mono mt-0.5">{{.Host}}</span>
+        </div>
+    </td>
+    
+    <!-- Ternary Status Badge -->
+    <td class="px-6 py-4 whitespace-nowrap">
+        {{if eq .Status "healthy"}}
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 glow-green">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse glow-green"></span>
+            Online (0% loss)
+        </span>
+        {{else if eq .Status "degraded"}}
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping"></span>
+            Degraded ({{formatLoss .Loss}} loss)
+        </span>
+        {{else if eq .Status "offline"}}
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 glow-red">
+            <span class="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse glow-red"></span>
+            Offline (100% loss)
+        </span>
+        {{else}}
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <span class="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+            Pending check...
+        </span>
+        {{end}}
+    </td>
+    
+    <!-- Latency (RTT) -->
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono">
+        {{if eq .Status "offline"}}
+        <span class="text-slate-600">—</span>
+        {{else if eq .Status "pending"}}
+        <span class="text-slate-600">Pending</span>
+        {{else}}
+        <span class="text-slate-300">{{formatRTT .RTT}}</span>
+        {{end}}
+    </td>
+    
+    <!-- Last Checked timestamp -->
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400 font-light">
+        {{formatTime .LastCheck}}
+    </td>
+    
+    <!-- Actions (Signal strength indicator + Delete button) -->
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <div class="flex items-center justify-end gap-4">
+            <!-- Signal Strength Indicator -->
+            {{if eq .Status "healthy"}}
+            <div class="inline-flex gap-0.5 items-end h-3.5" title="Healthy Link (No Loss)">
+                <span class="w-1 bg-emerald-500/30 rounded-t h-1.5"></span>
+                <span class="w-1 bg-emerald-500/50 rounded-t h-2.5"></span>
+                <span class="w-1 bg-emerald-500/80 rounded-t h-3"></span>
+                <span class="w-1 bg-emerald-500 rounded-t h-3.5 glow-green animate-pulse"></span>
+            </div>
+            {{else if eq .Status "degraded"}}
+            <div class="inline-flex gap-0.5 items-end h-3.5" title="Degraded Link (Some Loss)">
+                <span class="w-1 bg-amber-500/30 rounded-t h-1.5"></span>
+                <span class="w-1 bg-amber-500/50 rounded-t h-2.5"></span>
+                <span class="w-1 bg-amber-500 rounded-t h-3 glow-amber"></span>
+                <span class="w-1 bg-slate-800 rounded-t h-3.5"></span>
+            </div>
+            {{else if eq .Status "pending"}}
+            <div class="inline-flex gap-0.5 items-end h-3.5 animate-pulse" title="Check Pending">
+                <span class="w-1 bg-indigo-500/20 rounded-t h-1.5"></span>
+                <span class="w-1 bg-indigo-500/20 rounded-t h-2.5"></span>
+                <span class="w-1 bg-indigo-500/20 rounded-t h-3"></span>
+                <span class="w-1 bg-indigo-500/20 rounded-t h-3.5"></span>
+            </div>
+            {{else}}
+            <div class="inline-flex gap-0.5 items-end h-3.5" title="Disconnected Link (100% Loss)">
+                <span class="w-1 bg-rose-500/20 rounded-t h-1.5"></span>
+                <span class="w-1 bg-slate-800 rounded-t h-2.5"></span>
+                <span class="w-1 bg-slate-800 rounded-t h-3"></span>
+                <span class="w-1 bg-slate-800 rounded-t h-3.5"></span>
+            </div>
+            {{end}}
+        </div>
+    </td>
+</tr>
+{{end}}

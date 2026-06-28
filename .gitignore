@@ -1,0 +1,15 @@
+# Binaries
+bin/
+
+# Databases
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Environment overrides
+.env
+
+# Agent Files
+GEMINI.md

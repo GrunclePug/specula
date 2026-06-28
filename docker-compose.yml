@@ -1,0 +1,23 @@
+services:
+  specula:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: specula
+    restart: unless-stopped
+    ports:
+      - "10001:80"
+    environment:
+      - SPECULA_ADDR=:80
+      - SPECULA_DB_PATH=/data/specula.db
+      - SPECULA_JSON_LOG=true
+      - SPECULA_PING_INTERVAL=5s
+      - SPECULA_PING_TIMEOUT=2s
+      - SPECULA_PING_COUNT=5
+      - TZ=America/Vancouver
+    volumes:
+      - ./data:/data
+    # Allow the ping utility to send ICMP packets without requiring CAP_NET_RAW or running as root
+    sysctls:
+      - net.ipv4.ping_group_range=0 2147483647
+
